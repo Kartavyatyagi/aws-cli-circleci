@@ -1,4 +1,4 @@
-name: Deploy React to github pages
+name: Deploy React to GitHub Pages
 on:
     push:
         branches:
@@ -9,11 +9,6 @@ on:
             - README.md  
     workflow_dispatch:   
 jobs:
-    # greet:
-    #     runs-on: ubuntu-latest 
-    #     steps:
-    #         - name: "greet user"
-    #           run: echo "Hello World!"
     test: 
         runs-on: ubuntu-latest
         steps:
@@ -53,11 +48,14 @@ jobs:
             run: npm ci 
           - name: Build Project
             run: npm run build  
-          - name: Upload Dist Artifact
+          - name: Debug Build Directory
+            run: ls -la
+            working-directory: .
+          - name: Upload Build Artifact
             uses: actions/upload-pages-artifact@v3
             with:
                 name: github-pages
-                path: dist
+                path: build
     deploy:
         needs: build 
         runs-on: ubuntu-latest
@@ -67,5 +65,5 @@ jobs:
               with:
                 name: github-pages
                 path: build
-            - name: Deploy
-              run: echo "Deploy successfully!!"
+            - name: Deploy to GitHub Pages
+              uses: actions/deploy-pages@v4
