@@ -10,6 +10,12 @@ jobs:
     steps:
       - checkout
 
+      - run:
+          name: Inspect OIDC Token
+          command: |
+            echo "${CIRCLE_OIDC_TOKEN}" > token.jwt
+            cat token.jwt | cut -d '.' -f2 | base64 -d | jq .
+
       - aws-cli/setup:
           role_arn: arn:aws:iam::124355672791:role/Testing
           profile_name: default
@@ -18,10 +24,7 @@ jobs:
       - run:
           name: Verify AWS Connection
           command: |
-            echo "Verifying AWS identity..."
             aws sts get-caller-identity
-
-            echo "Listing secrets from Secrets Manager..."
             aws secretsmanager list-secrets --region us-east-1
 
 workflows:
@@ -29,4 +32,3 @@ workflows:
   test-aws-oidc:
     jobs:
       - connect-to-aws
-
