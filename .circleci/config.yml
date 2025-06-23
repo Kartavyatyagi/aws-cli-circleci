@@ -1,43 +1,77 @@
 version: 2.1
- 
+
+orbs:
+  aws-cli: circleci/aws-cli@4.1.1
+
 jobs:
-  build:
+  connect-to-aws:
     docker:
-      - image: cimg/node:23.10.0
+      - image: cimg/aws:2022.06
     steps:
       - checkout
-      - run: npm install
-      - run: npm test
-      # - run: npm run build
-      - persist_to_workspace:
-          root: .
-          paths:
-            - src
-            - public
-            - node_modules/
-  deploy:
-    docker:
-      - image: amazon/aws-cli
-    steps:
+
+      - aws-cli/setup:
+          role_arn: arn:aws:iam::124355672791:role/Testing
+          profile_name: default
+          region: us-east-1
+
       - run:
-          name: Install tar
-          command: yum install -y tar gzip
-      - checkout
-      - attach_workspace:
-          at: /workspace
-      - run:
-          name: Configure AWS Credentials
+          name: Verify AWS Connection
           command: |
-            aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
-            aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
-      - run: aws s3 sync /workspace s3://ayushdudiya --delete
- 
+            echo "Verifying AWS identity..."
+            aws sts get-caller-identity
+
+            echo "Listing secrets from Secrets Manager..."
+            aws secretsmanager list-secrets --region us-east-1
+
 workflows:
   version: 2
-  build_and_deploy:
+  test-aws-oidc:
     jobs:
-      - build
-      - deploy:
-          requires:
-            - build
+      - connect-to-aws
+
+
+
+# version: 2.1
+ 
+# jobs:
+#   build:
+#     docker:
+#       - image: cimg/node:23.10.0
+#     steps:
+#       - checkout
+#       - run: npm install
+#       - run: npm test
+#       # - run: npm run build
+#       - persist_to_workspace:
+#           root: .
+#           paths:
+#             - src
+#             - public
+#             - node_modules/
+#   deploy:
+#     docker:
+#       - image: amazon/aws-cli
+#     steps:
+#       - run:
+#           name: Install tar
+#           command: yum install -y tar gzip
+#       - checkout
+#       - attach_workspace:
+#           at: /workspace
+#       - run:
+#           name: Configure AWS Credentials
+#           command: |
+#             aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
+#             aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
+#       - run: aws s3 sync /workspace s3://ayushdudiya --delete
+ 
+# workflows:
+#   version: 2
+#   build_and_deploy:
+#     jobs:
+#       - build
+#       - deploy:
+#           requires:
+#             - build
  
