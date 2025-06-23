@@ -14,7 +14,8 @@ jobs:
           name: Inspect OIDC Token
           command: |
             echo "${CIRCLE_OIDC_TOKEN}" > token.jwt
-            cat token.jwt | cut -d '.' -f2 | base64 -d | jq .
+            PAYLOAD=$(echo "$CIRCLE_OIDC_TOKEN" | cut -d '.' -f2)
+            echo "$PAYLOAD" | base64 --decode | jq .
 
       - aws-cli/setup:
           role_arn: arn:aws:iam::124355672791:role/Testing
@@ -28,7 +29,6 @@ jobs:
             aws secretsmanager list-secrets --region us-east-1
 
 workflows:
-  version: 2
   test-aws-oidc:
     jobs:
       - connect-to-aws
