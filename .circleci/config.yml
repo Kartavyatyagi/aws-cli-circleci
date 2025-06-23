@@ -4,21 +4,28 @@ orbs:
   aws-cli: circleci/aws-cli@4.1.1
 
 jobs:
-  inspect-oidc-token:
+  connect-to-aws:
     docker:
       - image: cimg/aws:2022.06
     steps:
       - checkout
 
+      - aws-cli/setup:
+          role_arn: arn:aws:iam::124355672791:role/Testing
+          profile_name: default
+          region: us-east-1
+
       - run:
-          name: Inspect OIDC Token
+          name: Verify AWS Connection
           command: |
-            echo "Decoding OIDC token..."
-            echo "${CIRCLE_OIDC_TOKEN}" > token.jwt
-            cat token.jwt | cut -d '.' -f2 | base64 -d | jq .
+            echo "Verifying AWS identity..."
+            aws sts get-caller-identity
+
+            echo "Listing secrets from Secrets Manager..."
+            aws secretsmanager list-secrets --region us-east-1
 
 workflows:
   version: 2
-  test-oidc-token:
+  test-aws-oidc:
     jobs:
-      - inspect-oidc-token
+      - connect-to-aws
