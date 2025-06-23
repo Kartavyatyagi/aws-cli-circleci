@@ -11,17 +11,15 @@ jobs:
       - checkout
 
       - run:
-          name: Inspect OIDC Token
+          name: Print OIDC Token (Raw)
           command: |
-            echo "${CIRCLE_OIDC_TOKEN}" > token.jwt
-            PAYLOAD=$(echo "$CIRCLE_OIDC_TOKEN" | cut -d '.' -f2)
-            echo "$PAYLOAD" | base64 --decode | jq .
+            echo "OIDC Token:"
+            echo "${CIRCLE_OIDC_TOKEN}"
 
       - aws-cli/setup:
           role_arn: arn:aws:iam::124355672791:role/Testing
           profile_name: default
           region: us-east-1
-
       - run:
           name: Verify AWS Connection
           command: |
